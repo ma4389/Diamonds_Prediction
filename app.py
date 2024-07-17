@@ -16,9 +16,20 @@ def load_data(file_path):
     data = pd.read_csv(file_path)
     return data
 
+# Function to ensure DataFrame is Arrow-compatible
+def ensure_arrow_compatibility(df):
+    for col in df.columns:
+        if df[col].dtype == 'object':
+            df[col] = df[col].astype('string')
+        elif df[col].dtype == 'float64':
+            df[col] = pd.to_numeric(df[col], errors='coerce')
+    return df
+
 # Directly read the CSV file
 file_path = "diamonds.csv"
 dim = load_data(file_path)
+dim = ensure_arrow_compatibility(dim)
+
 st.write("Data Overview:")
 st.dataframe(dim.head(5))
 
