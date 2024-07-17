@@ -12,118 +12,119 @@ from sklearn.pipeline import Pipeline
 
 # Function to load data
 @st.cache
-def load_data(uploaded_file):
-    data = pd.read_csv(uploaded_file)
+def load_data(file_path):
+    data = pd.read_csv(file_path)
     return data
 
-# Upload file
-uploaded_file = st.file_uploader("Upload your CSV file", type=["csv"])
-if uploaded_file is not None:
-    dim = load_data(uploaded_file)
-    st.write("Data Overview:")
-    st.dataframe(dim.head(5))
-    
-    # Drop unnecessary column
-    if 'Unnamed: 0' in dim.columns:
-        dim.drop('Unnamed: 0', axis=1, inplace=True)
-    
-    # Display data info
-    st.write("Data Information:")
-    st.write(dim.info())
+# Directly read the CSV file
+file_path = "diamonds.csv"
+dim = load_data(file_path)
+st.write("Data Overview:")
+st.dataframe(dim.head(5))
 
-    # Show columns
-    st.write("Columns in the dataset:", dim.columns.tolist())
+# Drop unnecessary column
+if 'Unnamed: 0' in dim.columns:
+    dim.drop('Unnamed: 0', axis=1, inplace=True)
 
-    # Check for missing values
-    st.write("Missing values in each column:", dim.isna().sum())
+# Display data info
+st.write("Data Information:")
+buffer = io.StringIO()
+dim.info(buf=buffer)
+s = buffer.getvalue()
+st.text(s)
 
-    # Check for duplicates
-    st.write("Number of duplicated rows:", dim.duplicated().sum())
+# Show columns
+st.write("Columns in the dataset:", dim.columns.tolist())
 
-    # Drop duplicates
-    dim.drop_duplicates(inplace=True)
-    st.write("Number of duplicated rows after dropping duplicates:", dim.duplicated().sum())
+# Check for missing values
+st.write("Missing values in each column:", dim.isna().sum())
 
-    # Data shape
-    st.write("Data shape:", dim.shape)
+# Check for duplicates
+st.write("Number of duplicated rows:", dim.duplicated().sum())
 
-    # Describe data
-    st.write("Data Description:")
-    st.write(dim.describe())
+# Drop duplicates
+dim.drop_duplicates(inplace=True)
+st.write("Number of duplicated rows after dropping duplicates:", dim.duplicated().sum())
 
-    # Data types
-    st.write("Data Types:", dim.dtypes)
+# Data shape
+st.write("Data shape:", dim.shape)
 
-    # Unique values in 'cut' column
-    if 'cut' in dim.columns:
-        st.write("Unique values in 'cut' column:", dim['cut'].unique())
+# Describe data
+st.write("Data Description:")
+st.write(dim.describe())
 
-    # Number of unique values in each column
-    st.write("Number of unique values in each column:", dim.nunique())
+# Data types
+st.write("Data Types:", dim.dtypes)
 
-    # Pairplot
-    st.write("Pairplot:")
-    sns.pairplot(dim, hue='price')
-    st.pyplot()
+# Unique values in 'cut' column
+if 'cut' in dim.columns:
+    st.write("Unique values in 'cut' column:", dim['cut'].unique())
 
-    # Heatmap of correlations
-    st.write("Correlation Heatmap:")
-    nu_cols = dim.select_dtypes(exclude='object')
-    plt.figure(figsize=(10, 6))
-    sns.heatmap(nu_cols.corr(), annot=True)
-    st.pyplot()
+# Number of unique values in each column
+st.write("Number of unique values in each column:", dim.nunique())
 
-    # Split data into features and target
-    x = dim.drop('price', axis=1)
-    y = dim['price']
+# Pairplot
+st.write("Pairplot:")
+sns.pairplot(dim, hue='price')
+st.pyplot()
 
-    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
+# Heatmap of correlations
+st.write("Correlation Heatmap:")
+nu_cols = dim.select_dtypes(exclude='object')
+plt.figure(figsize=(10, 6))
+sns.heatmap(nu_cols.corr(), annot=True)
+st.pyplot()
 
-    # Preprocessor
-    cat_cols = dim.select_dtypes(include='object')
-    num_cols = dim.select_dtypes(exclude='object').drop('price', axis=1)
-    
-    preprocessor = ColumnTransformer([
-        ('cat', OneHotEncoder(handle_unknown='ignore'), cat_cols.columns),
-        ('num', StandardScaler(), num_cols.columns)
-    ])
+# Split data into features and target
+x = dim.drop('price', axis=1)
+y = dim['price']
 
-    # Linear Regression Model
-    st.write("Linear Regression Model:")
-    pipe_lr = Pipeline([
-        ('preprocessor', preprocessor),
-        ('model', LinearRegression())
-    ])
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
 
-    pipe_lr.fit(x_train, y_train)
-    lr_score = pipe_lr.score(x_test, y_test)
-    st.write(f"Linear Regression Model Accuracy: {lr_score}")
+# Preprocessor
+cat_cols = dim.select_dtypes(include='object')
+num_cols = dim.select_dtypes(exclude='object').drop('price', axis=1)
 
-    # K-Neighbors Regressor Model
-    st.write("K-Neighbors Regressor Model:")
-    pipe_knn = Pipeline([
-        ('preprocessor', preprocessor),
-        ('model', KNeighborsRegressor(n_neighbors=10))
-    ])
+preprocessor = ColumnTransformer([
+    ('cat', OneHotEncoder(handle_unknown='ignore'), cat_cols.columns),
+    ('num', StandardScaler(), num_cols.columns)
+])
 
-    pipe_knn.fit(x_train, y_train)
-    knn_score = pipe_knn.score(x_test, y_test)
-    st.write(f"K-Neighbors Regressor Model Accuracy: {knn_score}")
+# Linear Regression Model
+st.write("Linear Regression Model:")
+pipe_lr = Pipeline([
+    ('preprocessor', preprocessor),
+    ('model', LinearRegression())
+])
 
-    # Random Forest Regressor Model
-    st.write("Random Forest Regressor Model:")
-    pipe_rf = Pipeline([
-        ('preprocessor', preprocessor),
-        ('model', RandomForestRegressor())
-    ])
+pipe_lr.fit(x_train, y_train)
+lr_score = pipe_lr.score(x_test, y_test)
+st.write(f"Linear Regression Model Accuracy: {lr_score}")
 
-    pipe_rf.fit(x_train, y_train)
-    rf_score = pipe_rf.score(x_test, y_test)
-    st.write(f"Random Forest Regressor Model Accuracy: {rf_score}")
+# K-Neighbors Regressor Model
+st.write("K-Neighbors Regressor Model:")
+pipe_knn = Pipeline([
+    ('preprocessor', preprocessor),
+    ('model', KNeighborsRegressor(n_neighbors=10))
+])
 
-    # Display the best model
-    best_model_name = max([("Linear Regression", lr_score), 
-                           ("K-Neighbors Regressor", knn_score), 
-                           ("Random Forest Regressor", rf_score)], key=lambda x: x[1])[0]
-    st.write(f"The best model is: {best_model_name} with accuracy of {max(lr_score, knn_score, rf_score)}")
+pipe_knn.fit(x_train, y_train)
+knn_score = pipe_knn.score(x_test, y_test)
+st.write(f"K-Neighbors Regressor Model Accuracy: {knn_score}")
 
+# Random Forest Regressor Model
+st.write("Random Forest Regressor Model:")
+pipe_rf = Pipeline([
+    ('preprocessor', preprocessor),
+    ('model', RandomForestRegressor())
+])
+
+pipe_rf.fit(x_train, y_train)
+rf_score = pipe_rf.score(x_test, y_test)
+st.write(f"Random Forest Regressor Model Accuracy: {rf_score}")
+
+# Display the best model
+best_model_name = max([("Linear Regression", lr_score), 
+                       ("K-Neighbors Regressor", knn_score), 
+                       ("Random Forest Regressor", rf_score)], key=lambda x: x[1])[0]
+st.write(f"The best model is: {best_model_name} with accuracy of {max(lr_score, knn_score, rf_score)}")
