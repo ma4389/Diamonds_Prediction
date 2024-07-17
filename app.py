@@ -76,7 +76,7 @@ st.write("Number of unique values in each column:", dim.nunique())
 
 # Heatmap of correlations
 st.write("Correlation Heatmap:")
-nu_cols = dim.select_dtypes(exclude='object')
+nu_cols = dim.select_dtypes(include=['number'])
 fig, ax = plt.subplots(figsize=(10, 6))
 sns.heatmap(nu_cols.corr(), annot=True, ax=ax)
 st.pyplot(fig)
