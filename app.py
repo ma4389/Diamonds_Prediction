@@ -12,7 +12,6 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.pipeline import Pipeline
 
 # Function to load data
-
 def load_data(file_path):
     data = pd.read_csv(file_path)
     return data
@@ -64,13 +63,13 @@ if 'cut' in dim.columns:
 # Number of unique values in each column
 st.write("Number of unique values in each column:", dim.nunique())
 
-
 # Heatmap of correlations
 st.write("Correlation Heatmap:")
 nu_cols = dim.select_dtypes(exclude='object')
-plt.figure(figsize=(10, 6))
-sns.heatmap(nu_cols.corr(), annot=True)
-st.pyplot()
+fig, ax = plt.subplots(figsize=(10, 6))
+sns.heatmap(nu_cols.corr(), annot=True, ax=ax)
+st.pyplot(fig)
+
 # Split data into features and target
 x = dim.drop('price', axis=1)
 y = dim['price']
