@@ -64,10 +64,6 @@ if 'cut' in dim.columns:
 # Number of unique values in each column
 st.write("Number of unique values in each column:", dim.nunique())
 
-# Pairplot
-st.write("Pairplot:")
-sns.pairplot(dim, hue='price')
-st.pyplot()
 
 # Heatmap of correlations
 st.write("Correlation Heatmap:")
