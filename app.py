@@ -70,7 +70,7 @@ st.write("Correlation Heatmap:")
 nu_cols = dim.select_dtypes(exclude='object')
 plt.figure(figsize=(10, 6))
 sns.heatmap(nu_cols.corr(), annot=True)
-
+st.pyplot()
 # Split data into features and target
 x = dim.drop('price', axis=1)
 y = dim['price']
