@@ -12,24 +12,14 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.pipeline import Pipeline
 
 # Function to load data
+@st.cache
 def load_data(file_path):
     data = pd.read_csv(file_path)
     return data
 
-# Function to ensure DataFrame is Arrow-compatible
-def ensure_arrow_compatibility(df):
-    for col in df.columns:
-        if df[col].dtype == 'object':
-            df[col] = df[col].astype('string')
-        elif df[col].dtype == 'float64':
-            df[col] = pd.to_numeric(df[col], errors='coerce')
-    return df
-
 # Directly read the CSV file
 file_path = "diamonds.csv"
 dim = load_data(file_path)
-dim = ensure_arrow_compatibility(dim)
-
 st.write("Data Overview:")
 st.dataframe(dim.head(5))
 
@@ -74,12 +64,6 @@ if 'cut' in dim.columns:
 # Number of unique values in each column
 st.write("Number of unique values in each column:", dim.nunique())
 
-# Heatmap of correlations
-st.write("Correlation Heatmap:")
-nu_cols = dim.select_dtypes(include=['number'])
-fig, ax = plt.subplots(figsize=(10, 6))
-sns.heatmap(nu_cols.corr(), annot=True, ax=ax)
-st.pyplot(fig)
 
 # Split data into features and target
 x = dim.drop('price', axis=1)
